@@ -1,0 +1,19 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "PerfectPan/base64"
+
+// Values
+pub fn base64_decode(String) -> Result[String, String]
+
+pub fn base64_decode_bytes(String) -> Result[Bytes, String]
+
+pub fn base64_encode(String) -> String
+
+pub fn base64_encode_bytes(BytesView) -> String
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

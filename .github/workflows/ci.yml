@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install MoonBit stable
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s latest
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: Show toolchain version
+        run: moon version --all
+
+      - name: Check formatting
+        run: moon fmt --check
+
+      - name: Check public interfaces
+        run: |
+          moon info --target wasm,wasm-gc,js,native
+          git ls-files --error-unmatch pkg.generated.mbti
+          git diff --exit-code -- '*.mbti'
+
+      - name: Check and test supported backends
+        run: |
+          for target in wasm wasm-gc js native; do
+            moon check --deny-warn --target "$target"
+            moon test --deny-warn --target "$target"
+          done

@@ -1,9 +1,0 @@
-{
-  "name": "PerfectPan/base64",
-  "version": "0.1.1",
-  "readme": "README.md",
-  "repository": "",
-  "license": "MIT",
-  "keywords": ["base64"],
-  "description": "base64 encode/decode library"
-}

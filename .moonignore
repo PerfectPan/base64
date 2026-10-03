@@ -6,6 +6,11 @@ target/
 .moon/
 .credentials/
 credentials.json
+.git/
+.github/
+.gitignore
+.moonignore
+AGENTS.md
 *.log
 *.tmp
 .DS_Store

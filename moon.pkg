@@ -1,0 +1,4 @@
+import {
+  "moonbitlang/core/encoding/base64" @base64_core,
+  "moonbitlang/core/encoding/utf8",
+}
