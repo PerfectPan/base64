@@ -75,11 +75,13 @@ moon check --deny-warn --target wasm,wasm-gc,js,native
 moon test --deny-warn --target wasm,wasm-gc,js,native
 moon info --target wasm,wasm-gc,js,native
 moon fmt --check
+python3 -m unittest discover -s scripts -p 'test_*.py'
 ```
 
 Commit `pkg.generated.mbti` when the public API changes. JavaScript tests require
-Node.js; native tests require a C compiler. Work is committed and pushed directly
-to `main` after verification. CI runs checks on pushes and pull requests.
+Node.js; native tests require a C compiler. The publish preflight and its tests
+use Python 3's standard library. Work is committed and pushed directly to `main`
+after verification. CI runs checks on pushes and pull requests.
 
 ## Publish locally
 
@@ -93,14 +95,16 @@ Publishing is a local operation; CI does not upload releases.
    ```sh
    moon package --list
    moon package
-   moon publish --dry-run
+   python3 scripts/check_publish.py
    ```
 
-   With `moon 0.1.20260920` and `mooncake-bin 0.1.20260911`, the registry can
-   respond `202 Accepted` with `Dry run completed successfully. No changes were
-   made.` while the CLI exits with an error. This response confirms only the
-   server-side rehearsal, not a release. Inspect the response and investigate
-   other errors instead of ignoring the exit status in scripts.
+   The preflight runs `moon publish --dry-run`. With `moon 0.1.20260920` and
+   `mooncake-bin 0.1.20260911`, the publisher treats the registry's successful
+   `202 Accepted` dry-run response as a failure and exits 255. The preflight
+   accepts this specific response only when it confirms that no changes were
+   made and names the current module and version. Other errors remain failures;
+   a native successful exit is passed through. This is a local compatibility
+   fix and does not change the installed toolchain or publish a version.
 
 4. Confirm `moon whoami` identifies the module owner (`PerfectPan`). Use
    `moon login` if needed, then publish:

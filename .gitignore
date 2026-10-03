@@ -13,3 +13,4 @@ credentials.json
 .env.*
 *.pem
 *.key
+__pycache__/

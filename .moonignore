@@ -18,3 +18,5 @@ AGENTS.md
 .env.*
 *.pem
 *.key
+/scripts/
+__pycache__/

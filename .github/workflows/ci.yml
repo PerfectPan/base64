@@ -16,6 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
+      - name: Test publish preflight
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+
       - name: Install MoonBit stable
         run: |
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s latest
