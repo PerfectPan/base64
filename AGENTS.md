@@ -1,3 +1,9 @@
+# Project status
+
+- Version 0.3.0 is the final release. Preserve the discontinued notice and
+  official-library migration guidance in `README.md`. Further maintenance or
+  releases require an explicit owner request.
+
 # Repository workflow
 
 - Develop directly on `main`; commit and push completed, verified changes there.
@@ -19,9 +25,10 @@
 - Keep the root package and existing public string API compatible. The API and
   decoding rules are documented in `README.md`; consult them when changing
   encoding, validation, or error handling.
-- Use the current stable MoonBit syntax and `moon.mod` / `moon.pkg`. Prefer
-  `moonbitlang/core` encoding functions over handwritten codec tables. Keep
-  internal helpers private and add only externally needed exports.
+- Use the current stable MoonBit syntax and `moon.mod` / `moon.pkg`. Keep the
+  Base64 algorithm implemented in this repository; use the standard UTF-8 module
+  for text conversion. Keep internal helpers private and add only externally
+  needed exports.
 - Put public behavior tests in `*_test.mbt` and call the package through
   `@base64`. Cover independent RFC/Unicode vectors, binary data, malformed input,
   and any changed edge cases.

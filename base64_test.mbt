@@ -115,6 +115,57 @@ test "all 256 byte values across multiple blocks and sliced BytesView" {
 }
 
 ///|
+test "independent binary vectors at block and BytesView boundaries" {
+  // Oracle: Python base64.b64encode(bytes((i * 73 + 19) % 256 for i in range(40))[start:start + length]).
+  let bytes = Bytes::makei(40, i => ((i * 73 + 19) % 256).to_byte())
+  let cases : Array[(Int, Int, String)] = [
+    (0, 0, ""),
+    (0, 1, "Ew=="),
+    (0, 2, "E1w="),
+    (0, 3, "E1yl"),
+    (0, 4, "E1yl7g=="),
+    (0, 5, "E1yl7jc="),
+    (0, 6, "E1yl7jeA"),
+    (0, 7, "E1yl7jeAyQ=="),
+    (0, 8, "E1yl7jeAyRI="),
+    (1, 31, "XKXuN4DJEluk7TZ/yBFao+w1fscQWaLrNH3GD1ih6g=="),
+    (2, 32, "pe43gMkSW6TtNn/IEVqj7DV+xxBZous0fcYPWKHqM3w="),
+    (3, 33, "7jeAyRJbpO02f8gRWqPsNX7HEFmi6zR9xg9YoeozfMUO"),
+  ]
+  for (start, length, encoded) in cases {
+    let view = bytes[start:start + length]
+    assert_eq(@base64.base64_encode_bytes(view), encoded)
+    assert_eq(@base64.base64_decode_bytes(encoded), Ok(view.to_owned()))
+    assert_eq(
+      @base64.base64_decode_bytes(encoded.trim_end(chars="=").to_owned()),
+      Ok(view.to_owned()),
+    )
+  }
+}
+
+///|
+test "large binary slices with zero one and two byte tails" {
+  // Python base64.b64encode((b"\x00\xff\x80" * 342)[:length]) verified these compressed fixtures.
+  let pattern = b"\x00\xff\x80"
+  let bytes = Bytes::makei(1030, i => pattern[i % 3])
+  let full_blocks = "AP+A".repeat(341)
+  let cases = [
+    (1024, full_blocks + "AA=="),
+    (1025, full_blocks + "AP8="),
+    (1026, full_blocks + "AP+A"),
+  ]
+  for (length, encoded) in cases {
+    let view = bytes[3:3 + length]
+    assert_eq(@base64.base64_encode_bytes(view), encoded)
+    assert_eq(@base64.base64_decode_bytes(encoded), Ok(view.to_owned()))
+    assert_eq(
+      @base64.base64_decode_bytes(encoded.trim_end(chars="=").to_owned()),
+      Ok(view.to_owned()),
+    )
+  }
+}
+
+///|
 test "invalid Base64 is rejected consistently by text and bytes APIs" {
   let inputs = [
     "Z", "AAAAA", "Zg=", "Zg===", "=", "==", "===", "====", "Zm8==", "Zm9v=", "Zm9v==",
@@ -129,6 +180,36 @@ test "invalid Base64 is rejected consistently by text and bytes APIs" {
   for input in inputs {
     assert_eq(@base64.base64_decode(input), Err("invalid base64 input"))
     assert_eq(@base64.base64_decode_bytes(input), Err("invalid base64 input"))
+  }
+}
+
+///|
+test "every nonzero unused pad bit is rejected" {
+  let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+  for index = 0; index < 64; index = index + 1 {
+    let last = alphabet[index:index + 1].to_owned()
+    for prefix in ["", "Zm9v"] {
+      if index % 16 != 0 {
+        let tail = prefix + "A" + last
+        for input in [tail, tail + "=="] {
+          assert_eq(
+            @base64.base64_decode_bytes(input),
+            Err("invalid base64 input"),
+          )
+          assert_eq(@base64.base64_decode(input), Err("invalid base64 input"))
+        }
+      }
+      if index % 4 != 0 {
+        let tail = prefix + "AA" + last
+        for input in [tail, tail + "="] {
+          assert_eq(
+            @base64.base64_decode_bytes(input),
+            Err("invalid base64 input"),
+          )
+          assert_eq(@base64.base64_decode(input), Err("invalid base64 input"))
+        }
+      }
+    }
   }
 }
 

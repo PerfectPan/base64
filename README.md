@@ -1,13 +1,47 @@
 # Base64 for MoonBit
 
+**Discontinued — 0.3.0 is the final release.** MoonBit's official standard library
+now provides [Base64 encoding and decoding](https://github.com/moonbitlang/core/tree/main/encoding/base64).
+Use the official package for new code. This repository is retained as a public
+archive; no further features, fixes, or releases are planned.
+
 UTF-8 text and binary Base64 encoding with the standard
-[RFC 4648](https://www.rfc-editor.org/rfc/rfc4648.html) alphabet. Uses MoonBit's
-standard library; no third-party dependencies.
+[RFC 4648](https://www.rfc-editor.org/rfc/rfc4648.html) alphabet. Version 0.3.0
+updates the original 0.1.0 Base64 implementation and preserves the existing API.
+Text conversion uses MoonBit's standard UTF-8 module; there are no third-party
+dependencies.
 
 Requires MoonBit **v0.10.14 or later**. The module uses the current `moon.mod`
 and `moon.pkg` formats. Supported backends: Wasm, Wasm GC, JavaScript, and native.
 
-## Usage
+## Use the official package
+
+Import the standard library directly; no `moon add` is needed:
+
+```moonbit
+import {
+  "moonbitlang/core/encoding/base64",
+  "moonbitlang/core/encoding/utf8",
+} for "test"
+```
+
+Put this example in a `*_test.mbt` file:
+
+```moonbit
+test "official Base64 with Unicode" {
+  let text = "你好🌙"
+  let encoded = @base64.encode(@utf8.encode(text))
+  assert_eq(encoded, "5L2g5aW98J+MmQ==")
+  assert_eq(@utf8.decode(@base64.decode(encoded)), text)
+}
+```
+
+Omit `for "test"` for application or library imports. The official Base64 API
+encodes bytes and decodes to bytes; use the UTF-8 module for text. Its strict
+decoder raises `Malformed` on invalid input, whereas this package's decode
+functions return `Result`.
+
+## Archived package usage
 
 Add the published module:
 
@@ -65,6 +99,8 @@ on now returns an error. Use the byte API when the decoded data is not text.
 
 ## Development
 
+These commands are retained for validating the final source and working on forks.
+
 Install or update the [stable MoonBit toolchain](https://www.moonbitlang.com/download/),
 then run:
 
@@ -83,9 +119,11 @@ Node.js; native tests require a C compiler. The publish preflight and its tests
 use Python 3's standard library. Work is committed and pushed directly to `main`
 after verification. CI runs checks on pushes and pull requests.
 
-## Publish locally
+## Release procedure
 
-Publishing is a local operation; CI does not upload releases.
+The procedure below is retained as a maintainer reference. Version 0.3.0 is the
+final planned release. Publishing is a local operation; CI does not upload
+releases.
 
 1. Update `version` in `moon.mod` to an unused semantic version. Check published
    versions with `moon view PerfectPan/base64 --versions`.
